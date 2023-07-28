@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termux Exam</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      margin-bottom: 20px;
+    }
+
+    .options label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .score {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Termux Exam</h1>
+
+  <div id="quiz">
+    <div class="question">
+      <p id="questionText"></p>
+      <div class="options" id="options"></div>
+    </div>
+
+    <button onclick="nextQuestion()">Next</button>
+  </div>
+
+  <div class="score" id="scoreDisplay" style="display: none;">
+    Your Score: <span id="score">0</span> / <span id="totalQuestions">0</span>
+  </div>
+
+  <script>
+    let questions = [];
+    let currentQuestion = 0;
+    let score = 0;
+
+    // Fetch questions from the JSON file
+    fetch("questions.json")
+      .then((response) => response.json())
+      .then((data) => {
+        questions = data;
+        showQuestion();
+      })
+      .catch((error) => console.error("Error fetching questions:", error));
+
+    function showQuestion() {
+      const questionText = document.getElementById("questionText");
+      const optionsDiv = document.getElementById("options");
+      const totalQuestionsSpan = document.getElementById("totalQuestions");
+      const scoreSpan = document.getElementById("score");
+
+      if (currentQuestion < questions.length) {
+        questionText.textContent = questions[currentQuestion].question;
+        optionsDiv.innerHTML = "";
+
+        questions[currentQuestion].options.forEach((option, index) => {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = "answer";
+          input.value = index;
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(option));
+          optionsDiv.appendChild(label);
+        });
+
+        totalQuestionsSpan.textContent = questions.length;
+        scoreSpan.textContent = score;
+      } else {
+        showScore();
+      }
+    }
+
+    function nextQuestion() {
+      const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+
+      if (!selectedAnswer) {
+        alert("Please select an answer.");
+        return;
+      }
+
+      const userAnswer = parseInt(selectedAnswer.value, 10);
+      if (userAnswer === questions[currentQuestion].correctAnswer) {
+        score++;
+      }
+
+      currentQuestion++;
+      showQuestion();
+    }
+
+    function showScore() {
+      const quizDiv = document.getElementById("quiz");
+      const scoreDisplay = document.getElementById("scoreDisplay");
+
+      quizDiv.style.display = "none";
+      scoreDisplay.style.display = "block";
+    }
+  </script>
+</body>
+</html>
